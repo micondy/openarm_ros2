@@ -25,19 +25,13 @@
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
+#include "openarm_hardware/dynamics.hpp"
 #include "openarm_hardware/visibility_control.h"
 #include "rclcpp/macros.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
 namespace openarm_hardware {
 
-/**
- * @brief Simplified OpenArm V10 Hardware Interface
- *
- * This is a simplified version that uses the OpenArm CAN API directly,
- * following the pattern from full_arm.cpp example. Much simpler than
- * the original implementation.
- */
 class OpenArm_v10HW : public hardware_interface::SystemInterface {
  public:
   OpenArm_v10HW();
@@ -77,8 +71,6 @@ class OpenArm_v10HW : public hardware_interface::SystemInterface {
  private:
   // V10 default configuration
   static constexpr size_t ARM_DOF = 7;
-  static constexpr bool ENABLE_GRIPPER = true;
-
   // Default motor configuration for V10
   const std::vector<openarm::damiao_motor::MotorType> DEFAULT_MOTOR_TYPES = {
       openarm::damiao_motor::MotorType::DM8009,  // Joint 1
@@ -116,9 +108,14 @@ class OpenArm_v10HW : public hardware_interface::SystemInterface {
   std::string arm_prefix_;
   bool hand_;
   bool can_fd_;
+  bool enable_gravity_comp_ = false;
+  bool enable_coriolis_comp_ = false;
+  std::string root_link_ = "openarm_body_link0";
+  std::string tip_link_ = "openarm_hand";
 
   // OpenArm instance
   std::unique_ptr<openarm::can::socket::OpenArm> openarm_;
+  std::unique_ptr<Dynamics> dynamics_;
 
   // Generated joint names for this arm instance
   std::vector<std::string> joint_names_;
